@@ -1,47 +1,47 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "./EnumDeclaration.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "./DataTypes.sol";
+import "hardhat/console.sol";
 
-contract UserBalance {
-    uint256 bonus2Pct = 10**17;
-    uint256 bonus6Pct = 50**17;
-    uint256 bonus8Pct = 1 ether;
+contract UserBalance is Ownable {
+    // user - game - team - share amount
+    mapping(address => mapping(Game => mapping(Team => uint256))) userBetInfos;
 
-    struct Selection {
-        // key: Team, value: user's total shareAmount by betting team
-        mapping(Team => uint256) shareAmounts;
-    }
-
-    struct BetInfo {
-        // key: eventId, value: user's selection
-        mapping(string => Selection) selections;
-    }
-
-    /**
-     * @notice key: user address, value: user's bet info
-     */
-    //mapping(address => BetInfo) userBetInfos;
-
-    mapping(address => mapping(string => mapping(Team => uint256))) userBetInfos;
-
-    function bet(
-        string calldata eventId,
+    function placeBet(
+        address user,
+        Game game,
         Team team,
         uint256 amount
     ) public returns (uint256) {
         require(amount > 0, "Bet amount must greater than 0");
+        require(amount <= 10 ether, "Max bet amount is 10 ETH");
         require((amount / 10000) * 10000 == amount, "Bet amount too small");
+
+        // Give 5% bonus to user if book over 1 eth
         uint256 bonus = 0;
-        if (amount >= bonus8Pct) {
-            bonus = (amount * 800) / 10000;
-        } else if (amount >= bonus6Pct) {
-            bonus = (amount * 600) / 10000;
-        } else if (amount >= bonus2Pct) {
-            bonus = (amount * 200) / 10000;
+        if (amount >= 1 ether) {
+            bonus = (amount * 500) / 10000;
         }
         amount = amount + bonus;
-        userBetInfos[msg.sender][eventId][team] += amount;
+        userBetInfos[user][game][team] += amount;
         return amount;
+    }
+
+    function getUserShareAmount(
+        address user,
+        Game game,
+        Team winner
+    ) public view returns (uint256) {
+        return userBetInfos[user][game][winner];
+    }
+
+    function clearUserShareAmount(
+        address user,
+        Game game,
+        Team winner
+    ) public {
+        userBetInfos[user][game][winner] = 0;
     }
 }
