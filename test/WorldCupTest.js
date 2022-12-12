@@ -15,13 +15,16 @@ describe("World Cup", function () {
         const WorldCupFactory = await ethers.getContractFactory("FIFAWorldCup");
         const worldCup = await WorldCupFactory.deploy(betting.address, userBalance.address);
 
+        await betting.updateMainContract(worldCup.address)
+        await userBalance.updateMainContract(worldCup.address)
+
         return { betting, userBalance, worldCup, owner, user1, user2, user3, user4 };
     }
 
     describe("Deployment", function () {
 
         it("Should bet final game success and check the right amount", async function () {
-            const { betting, userBalance, worldCup, user1, user2 } = await loadFixture(deployContract);
+            const { userBalance, worldCup, user1, user2 } = await loadFixture(deployContract);
 
             await worldCup.connect(user1)
                 .final_winning_Argentina({ value: ethers.utils.parseEther("1") })
@@ -42,7 +45,7 @@ describe("World Cup", function () {
         });
 
         it("Should rebet success and check right amount", async function () {
-            const { betting, userBalance, worldCup, user1, user2 } = await loadFixture(deployContract);
+            const { userBalance, worldCup, user1 } = await loadFixture(deployContract);
 
             await worldCup.connect(user1)
                 .final_winning_Argentina({ value: ethers.utils.parseEther("1") })
@@ -62,7 +65,7 @@ describe("World Cup", function () {
         });
 
         it("Should able to get share", async function () {
-            const { betting, userBalance, worldCup, owner, user1, user2, user3 } = await loadFixture(deployContract);
+            const { betting, userBalance, worldCup, user1, user2, user3 } = await loadFixture(deployContract);
 
             // User1 bet Brasil win
             // And check User1 correct share amount
@@ -110,7 +113,6 @@ describe("World Cup", function () {
 
             // approximately 400000000000000000
             console.log("reward amount " + (balanceAfter - balanceBefore))
-
         });
     })
 

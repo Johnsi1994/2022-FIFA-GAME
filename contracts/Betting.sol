@@ -6,6 +6,9 @@ import "./DataTypes.sol";
 import "hardhat/console.sol";
 
 contract Betting is Ownable {
+    // Main contract address (FIFAWorldCup)
+    address private mainContract;
+
     uint256 private constant FINAL_END_TIME = 1671390000;
     uint256 private constant SEMI_FINAL_END_TIME = 1671303600;
 
@@ -61,6 +64,7 @@ contract Betting is Ownable {
         uint256 _betAmount,
         uint256 _shareAmount
     ) external {
+        require(msg.sender == mainContract, "Only MainContract !");
         Event storage e = events[game];
         e.totalBetAmount += _betAmount;
         if (betTeam == e.homeTeam) {
@@ -108,11 +112,15 @@ contract Betting is Ownable {
     {
         Event memory e = events[game];
         require(e.winner != Team.Unsettled, "The game still on going");
-        
+
         winner = e.winner;
         totalBetAmount = e.totalBetAmount;
         winnerTotalShareAmount = winner == e.homeTeam
             ? e.homeTotalShareAmount
             : e.awayTotalShareAmount;
+    }
+
+    function updateMainContract(address _newContract) public onlyOwner {
+        mainContract = _newContract;
     }
 }
