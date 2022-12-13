@@ -12,13 +12,17 @@ contract UserBalance is Ownable {
     // user - game - team - share amount
     mapping(address => mapping(Game => mapping(Team => uint256))) userBetInfos;
 
+    function updateMainContract(address _newContract) external onlyOwner {
+        mainContract = _newContract;
+    }
+
     function placeBet(
         address user,
         Game game,
         Team team,
         uint256 amount
     ) external returns (uint256) {
-        require(msg.sender == mainContract, "Only MainContract !");
+        require(msg.sender == mainContract, "Only MainContract");
         require(amount > 0, "Bet amount must greater than 0");
         require(amount <= 10 ether, "Max bet amount is 10 ETH");
         require((amount / 10000) * 10000 == amount, "Bet amount too small");
@@ -46,11 +50,7 @@ contract UserBalance is Ownable {
         Game game,
         Team winner
     ) external {
-        require(msg.sender == mainContract, "Only MainContract !");
+        require(msg.sender == mainContract, "Only MainContract");
         userBetInfos[user][game][winner] = 0;
-    }
-
-    function updateMainContract(address _newContract) public onlyOwner {
-        mainContract = _newContract;
     }
 }

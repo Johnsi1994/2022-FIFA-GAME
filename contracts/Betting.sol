@@ -58,13 +58,17 @@ contract Betting is Ownable {
         events[Game.SEMI_FINAL] = eventSemiFinal;
     }
 
+    function updateMainContract(address _newContract) external onlyOwner {
+        mainContract = _newContract;
+    }
+
     function updateEventInfo(
         Game game,
         Team betTeam,
         uint256 _betAmount,
         uint256 _shareAmount
     ) external {
-        require(msg.sender == mainContract, "Only MainContract !");
+        require(msg.sender == mainContract, "Only MainContract");
         Event storage e = events[game];
         e.totalBetAmount += _betAmount;
         if (betTeam == e.homeTeam) {
@@ -83,25 +87,25 @@ contract Betting is Ownable {
         if (game == Game.FINAL) {
             require(
                 time >= FINAL_END_TIME || enableSetWinner,
-                "Final game is on going !"
+                "Final game is on going"
             );
         } else {
             require(
                 time >= SEMI_FINAL_END_TIME || enableSetWinner,
-                "Semi-Final game is on going !"
+                "Semi-Final game is on going"
             );
         }
 
         Event storage e = events[game];
         require(
             team == e.homeTeam || team == e.awayTeam,
-            "The team is not int Final game"
+            "The team is not in this game"
         );
 
         e.winner = team == e.homeTeam ? e.homeTeam : e.awayTeam;
     }
 
-    function getEventInfo(Game game)
+    function getWinnerEventInfo(Game game)
         public
         view
         returns (
@@ -118,9 +122,5 @@ contract Betting is Ownable {
         winnerTotalShareAmount = winner == e.homeTeam
             ? e.homeTotalShareAmount
             : e.awayTotalShareAmount;
-    }
-
-    function updateMainContract(address _newContract) public onlyOwner {
-        mainContract = _newContract;
     }
 }

@@ -51,7 +51,7 @@ contract FIFAWorldCup is Ownable {
             Team winner,
             uint256 totalBetAmount,
             uint256 winnerTotalShareAmount
-        ) = betting.getEventInfo(game);
+        ) = betting.getWinnerEventInfo(game);
 
         address sender = payable(msg.sender);
 
@@ -60,6 +60,8 @@ contract FIFAWorldCup is Ownable {
             game,
             winner
         );
+
+        require(userShareAmount > 0, "You don't have share");
 
         uint256 reward = (totalBetAmount * userShareAmount) /
             winnerTotalShareAmount;
